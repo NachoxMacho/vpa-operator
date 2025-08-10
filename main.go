@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -53,7 +54,6 @@ func main() {
 	}
 
 	for {
-
 		slog.Info("Scanning for changes")
 
 		vpas, err := custom.AutoscalingV1().VerticalPodAutoscalers("").List(context.TODO(), metav1.ListOptions{})
@@ -100,8 +100,51 @@ func main() {
 			slog.Info("Created", slog.String("vpa", res.Name), slog.String("namespace", res.Namespace))
 		}
 
+		statefulSets, err := clientset.AppsV1().StatefulSets("").List(context.TODO(), metav1.ListOptions{})
+		if err != nil {
+			slog.Error("failed to fetch StatefulSets", slog.String("error", err.Error()))
+			time.Sleep(5*time.Minute)
+			continue
+		}
+
+		for _, s := range statefulSets.Items {
+			if slices.ContainsFunc(vpas.Items, func(v autoscalerv1.VerticalPodAutoscaler) bool { return s.Name == v.Name && s.Namespace == v.Namespace }) {
+				continue
+			}
+			slog.Info("Building VPA", slog.String("statefulSet", s.Name), slog.String("namespace", s.Namespace))
+
+			off := autoscalerv1.UpdateModeOff
+			o := autoscalerv1.VerticalPodAutoscaler{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      s.Name,
+					Namespace: s.Namespace,
+				},
+				Spec: autoscalerv1.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						APIVersion: "apps/v1",
+						Kind:       "Deployment",
+						Name:       s.Name,
+					},
+					UpdatePolicy: &autoscalerv1.PodUpdatePolicy{
+						UpdateMode: &off,
+					},
+				},
+			}
+			res, err := custom.AutoscalingV1().VerticalPodAutoscalers(s.Namespace).Create(context.TODO(), &o, metav1.CreateOptions{})
+			if err != nil {
+				slog.Error("failed to create vpa", slog.String("error", err.Error()), slog.String("deployment", s.Name), slog.String("namespace", s.Namespace))
+			}
+			slog.Info("Created", slog.String("vpa", res.Name), slog.String("namespace", res.Namespace))
+		}
+
 		for _, v := range vpas.Items {
 			if slices.ContainsFunc(deployments.Items, func(d appsv1.Deployment) bool { return d.Name == v.Name && d.Namespace == v.Namespace }) {
+				continue
+			}
+			if slices.ContainsFunc(statefulSets.Items, func(s appsv1.StatefulSet) bool { return s.Name == v.Name && s.Namespace == v.Namespace }) {
+				continue
+			}
+			if strings.HasPrefix(v.Name,"goldilocks") {
 				continue
 			}
 			err := custom.AutoscalingV1().VerticalPodAutoscalers(v.Namespace).Delete(context.TODO(), v.Name, metav1.DeleteOptions{})
