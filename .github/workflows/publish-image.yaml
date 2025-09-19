@@ -131,6 +131,11 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
+      - name: Update Helm Version to git tag
+        run: |
+          sed -i -e "s/version: \"\"/version: \"${{ needs.tag-repo.outputs.newtag }}\"/g" charts/vpa-operator/Chart.yaml
+          sed -i -e "s/appVersion: \"\"/appVersion: \"${{ needs.tag-repo.outputs.newtag }}\"/g" charts/vpa-operator/Chart.yaml
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0 # v1.5.0
         with:
