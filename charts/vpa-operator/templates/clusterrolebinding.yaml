@@ -9,3 +9,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: {{ include "vpa-operator.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}

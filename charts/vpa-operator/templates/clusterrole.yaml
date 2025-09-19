@@ -12,3 +12,12 @@ rules:
       - statefulsets
       - deployments
       - daemonsets
+  - verbs:
+      - list
+      - watch
+      - create
+      - delete
+    apiGroups:
+      - autoscaling.k8s.io
+    resources:
+      - verticalpodautoscalers
