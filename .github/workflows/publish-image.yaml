@@ -37,7 +37,7 @@ jobs:
           NEWPATCH="01"
           if [ "$RECENT" != "" ]; then
             OLDPATCH=$(echo $RECENT | cut -d. -f 3)
-            NEWPATCH=$(printf "%02d" $((OLDPATCH+1)))
+            NEWPATCH=$(printf "%02d" $((${OLDPATCH#0}+1)))
           fi
           NEWTAG="$DATEFORMATTED.$NEWPATCH"
           echo "New version set to $NEWTAG"
