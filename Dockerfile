@@ -35,9 +35,9 @@ WORKDIR /app
 COPY ./scripts/ /
 
 # This is here to make sure we have a build cache for dev builds in the container.
-RUN --mount=type=cache,target=/root/.cache/go-build go mod download
+RUN go mod download
 
-RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 GOOS=linux go build -o /app/docker-go
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/docker-go
 
 EXPOSE 42069
 
