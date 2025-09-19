@@ -19,7 +19,7 @@ jobs:
       - name: Create Tag
         run: |
           git config --local user.email "action@github.com"
-          git cofig --local user.name "GitHub Action"
+          git config --local user.name "GitHub Action"
 
           DATEFORMATTED=$(date +"%Y.%m")
           RECENT=$(git tag -l --sort=-creatordate | grep $DATEFORMATTED | head -n 1)
