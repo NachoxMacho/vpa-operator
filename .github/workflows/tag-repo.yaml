@@ -1,0 +1,35 @@
+name: Tag Repository
+
+# Configures this workflow to run every time a change is pushed to the branch called `release`.
+on:
+  push:
+    branches: ["main"]
+
+# There is a single job in this workflow. It's configured to run on the latest available version of Ubuntu.
+jobs:
+  tag-repo:
+    runs-on: ubuntu-latest
+    # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create Tag
+        run: |
+          git config --local user.email "action@github.com"
+          git cofig --local user.name "GitHub Action"
+
+          DATEFORMATTED=$(date +"%Y.%m")
+          RECENT=$(git tag -l --sort=-creatordate | grep $DATEFORMATTED | head -n 1)
+          NEWPATCH="01"
+          if [ "$RECENT" != "" ]; then
+            OLDPATCH=$(echo $RECENT | cut -d. -f 3)
+            NEWPATCH=$(printf "%02d" $((OLDPATCH+1)))
+          fi
+          NEWTAG="$DATEFORMATTED.$NEWPATCH"
+          echo "New version set to $NEWTAG"
+
+          git tag $NEWTAG -a -m "Release $NEWTAG"
+          git push origin $NEWTAG
