@@ -25,6 +25,7 @@ jobs:
 
           DATEFORMATTED=$(date +"%Y.%m")
           RECENT=$(git tag -l --sort=-creatordate | grep $DATEFORMATTED | head -n 1)
+          echo "Recent Version: $RECENT"
           NEWPATCH="01"
           if [ "$RECENT" != "" ]; then
             OLDPATCH=$(echo $RECENT | cut -d. -f 3)
