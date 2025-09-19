@@ -4,10 +4,13 @@ FROM golang:1.24 AS base
 
 WORKDIR /app
 
+RUN go env -w GOMODCACHE=/root/.cache/go-build
+
+RUN --mount=type=cache,target=/root/.cache/go-build go mod download
+
 # Dependencies
 COPY go.mod go.sum ./
-RUN go mod download
-RUN go mod verify
+RUN --mount=type=cache,target=/root/.cache/go-build go mod download
 
 COPY . ./
 
@@ -18,13 +21,13 @@ WORKDIR /app
 COPY --from=base /app/ ./
 COPY --from=base /go/pkg/mod /go/pkg/mod
 
-RUN golangci-lint run
+RUN --mount=type=cache,target=/root/.cache/go-build golangci-lint run
 
 # Build Stage
 FROM base AS build
 
 # Disable CGO so we can run without glibc
-RUN CGO_ENABLED=0 GOOS=linux go build -o /docker-go
+RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 GOOS=linux go build -o /docker-go
 
 # Dev build Stage
 FROM base AS dev
@@ -34,9 +37,9 @@ WORKDIR /app
 COPY ./scripts/ /
 
 # This is here to make sure we have a build cache for dev builds in the container.
-RUN go mod download
+RUN --mount=type=cache,target=/root/.cache/go-build go mod download
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app/docker-go
+RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 GOOS=linux go build -o /app/docker-go
 
 EXPOSE 42069
 
