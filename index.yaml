@@ -2,6 +2,16 @@ apiVersion: v1
 entries:
   vpa-operator:
   - apiVersion: v2
+    appVersion: 2026.03.01
+    created: "2026-03-17T04:35:56.832561274Z"
+    description: A Helm chart for Kubernetes
+    digest: 0afa845147ada08773061a11c551f736efa738a4411cbd1d4704e2af0c009f1f
+    name: vpa-operator
+    type: application
+    urls:
+    - https://github.com/NachoxMacho/vpa-operator/releases/download/vpa-operator-2026.03.01/vpa-operator-2026.03.01.tgz
+    version: 2026.03.01
+  - apiVersion: v2
     appVersion: 2025.09.22
     created: "2025-09-19T17:47:54.84608346Z"
     description: A Helm chart for Kubernetes
@@ -101,4 +111,4 @@ entries:
     urls:
     - https://github.com/NachoxMacho/vpa-operator/releases/download/vpa-operator-0.1.0/vpa-operator-0.1.0.tgz
     version: 0.1.0
-generated: "2025-09-19T17:47:54.846128394Z"
+generated: "2026-03-17T04:35:56.832606078Z"
